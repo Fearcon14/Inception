@@ -1,0 +1,107 @@
+version: '3.8'
+
+# 'services' is the main section where we define each container of our application.
+services:
+
+# --- NGINX Service Definition ---
+  # This name is also a DNS hostname on the internal network, so other containers can reach it at http://nginx.
+  nginx:
+    # 'build' tells Docker Compose to build an image from a Dockerfile instead of pulling a pre-made one.
+    build: ./requirements/nginx
+
+    # 'image' gives a name to the custom Docker image that will be built.
+    image: inception-nginx
+
+    # 'container_name' sets a fixed, predictable name for the container when it runs.
+    container_name: nginx
+
+    # 'ports' maps a port from the host machine (your VM) to a port inside the container.
+    # "443:443" means that traffic arriving at port 443 on your VM will be forwarded to port 443 in the NGINX container.
+    # Port 443 is the standard for HTTPS traffic.
+    ports:
+      - "443:443"
+
+    # 'volumes' links a directory on the host to a directory inside the container for data persistence and sharing.
+    # 'wp_files:/var/www/html' mounts our 'wp_files' volume to the web root directory inside the NGINX container.
+    # This gives NGINX access to the WordPress files to serve them to users.
+    volumes:
+      - wp_files:/var/www/html
+
+    # 'networks' connects this service to a specific Docker network.
+    # All services on the 'inception-network' can communicate with each other.
+    networks:
+      - inception-network
+
+    # 'restart: always' is a policy that tells Docker to automatically restart this container if it ever stops or crashes.
+    restart: always
+
+    # 'depends_on' defines startup dependencies. This ensures that the 'wordpress' container is started before the 'nginx' container starts.
+    depends_on:
+      - wordpress
+
+# --- WordPress Service Definition ---
+  wordpress:
+    # Build the image from the Dockerfile located in './requirements/wordpress'.
+    build: ./requirements/wordpress
+    image: inception-wordpress
+    container_name: wordpress
+
+    # 'env_file' tells Docker Compose to load environment variables from the specified file.
+    # This is how we securely pass database passwords and other secrets to the WordPress container without hardcoding them.
+    env_file: .env
+
+    # This is the key to sharing files. We mount the *same* 'wp_files' volume to the web root directory inside the WordPress container.
+    # Now, both WordPress (which writes files) and NGINX (which reads files) have access to the exact same folder.
+    volumes:
+      - wp_files:/var/www/html
+    networks:
+      - inception-network
+    restart: always
+    # WordPress cannot function without its database, so we make sure the 'mariadb' service starts first.
+    depends_on:
+      - mariadb
+
+# --- MariaDB Service Definition ---
+  mariadb:
+    build: ./requirements/mariadb
+    image: inception-mariadb
+    container_name: mariadb
+    env_file: .env
+
+    # This is critical for data persistence. We mount the 'db_data' volume to '/var/lib/mysql', which is where MariaDB stores all its database files.
+    # This ensures that your database data is safe even if the container is removed or recreated.
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - inception-network
+    restart: always
+
+# --- Global Network Definition ---
+# This top-level 'networks' key is where we define the networks that our services can use.
+networks:
+  # We are defining a network named 'inception-network'.
+  inception-network:
+    # 'driver: bridge' creates a standard, private network for the containers. Services on this network can communicate using their service names.
+    driver: bridge
+
+# --- Global Volume Definition ---
+# This top-level 'volumes' key defines the volumes used for persistent data storage.
+volumes:
+  # We define the 'wp_files' volume.
+  wp_files:
+    # 'driver: local' means the volume data will be stored on the host machine.
+    driver: local
+    # 'driver_opts' allows us to provide specific options for the volume driver.
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      # 'device' specifies the exact path on the host machine where the data will be stored. This is a "bind mount".
+      # IMPORTANT: This path must be absolute
+      device: '/home/ksinn/data/wp_files'
+  # We define the 'db_data' volume, which will also be a bind mount to a specific folder on the host.
+  db_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/home/ksinn/data/db_data'
