@@ -39,8 +39,14 @@ else
 fi
 
 # Set correct permissions
-chown -R www.data:www-data /var/www/html
+chown -R www-data:www-data /var/www/html
 chmod -R 755 /var/www/html
+
+# Create the /run/php directory for the PHP-FPM socket"
+echo "Creating /run/php directory for PHP-FPM socket..."
+mkdir -p /run/php
+chown -R www-data:www-data /run/php
+chmod 755 /run/php
 
 # Start PHP-FPM
 echo "Starting PHP-FPM..."
