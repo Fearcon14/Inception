@@ -9,22 +9,22 @@ all: up
 
 up:
 	@echo "$(GREEN)Building and starting the containers...$(RESET)"
-	docker-compose -f$(COMPOSE_FILE) up --build -D
+	docker compose -f $(COMPOSE_FILE) up --build -d
 
 # Stops and removes the containers
 down:
 	@echo "$(RED)Stopping and removing the containers...$(RESET)"
-	docker-compose -f$(COMPOSE_FILE) down
+	docker compose -f $(COMPOSE_FILE) down
 
 # Forces a rebuild of the containers
 build:
 	@echo "$(YELLOW)Forcing a rebuild of the containers...$(RESET)"
-	docker-compose -f $(COMPOSE_FILE) build
+	docker compose -f $(COMPOSE_FILE) build
 
 # Cleanup: stops containers, removes volumes and images
 clean:
 	@echo "$(CYAN)Cleaning up...$(RESET)"
-	docker-compose -f $(COMPOSE_FILE) down --volumes --rmi all
+	docker compose -f $(COMPOSE_FILE) down --volumes --rmi all
 
 # Restart the stack from scratch
 re:
@@ -35,7 +35,7 @@ re:
 # Tails the logs for all services for debugging
 logs:
 	@echo "$(BLUE)Tailing the logs for all services...$(RESET)"
-	docker-compose -f $(COMPOSE_FILE) logs -f
+	docker compose -f $(COMPOSE_FILE) logs -f
 
 .PHONY: all up down build clean re logs
 
