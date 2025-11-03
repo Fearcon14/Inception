@@ -23,7 +23,7 @@ build:
 # Cleanup: stops containers, removes volumes and images
 clean:
 	@echo "$(CYAN)Cleaning up...$(RESET)"
-	docker compose -f $(COMPOSE_FILE) down --volumes --rmi all
+	@docker compose -f $(COMPOSE_FILE) down --volumes --rmi all
 
 # Restart the stack from scratch
 re:
@@ -31,6 +31,9 @@ re:
 	@$(MAKE) clean
 	@echo "$(PURPLE)Deleting host data volumes...$(RESET)"
 	@sudo rm -rf /home/ksinn/data/wp_files /home/ksinn/data/db_data
+	@echo "$(PURPLE)Re-creating host data directories...$(RESET)"
+	@mkdir -p /home/ksinn/data/wp_files
+	@mkdir -p /home/ksinn/data/db_data
 	@$(MAKE) all
 
 # Tails the logs for all services for debugging
@@ -41,7 +44,7 @@ logs:
 .PHONY: all up down build clean re logs
 
 # Color definitions for echo statements
-RED = \033[0;31m
+RED = \033[0;3G]
 GREEN = \033[0;32m
 YELLOW = \033[0;33m
 BLUE = \033[0;34m
@@ -50,4 +53,3 @@ CYAN = \033[0;36m
 WHITE = \033[0;37m
 BOLD = \033[1m
 RESET = \033[0m
-
