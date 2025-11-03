@@ -1,6 +1,5 @@
 # Makefile for Inception
 
-
 # Use docker-compose file in srcs
 COMPOSE_FILE = srcs/docker-compose.yml
 
@@ -30,6 +29,8 @@ clean:
 re:
 	@echo "$(PURPLE)Restarting the stack from scratch...$(RESET)"
 	@$(MAKE) clean
+	@echo "$(PURPLE)Deleting host data volumes...$(RESET)"
+	@sudo rm -rf /home/ksinn/data/wp_files /home/ksinn/data/db_data
 	@$(MAKE) all
 
 # Tails the logs for all services for debugging
@@ -49,3 +50,4 @@ CYAN = \033[0;36m
 WHITE = \033[0;37m
 BOLD = \033[1m
 RESET = \033[0m
+
