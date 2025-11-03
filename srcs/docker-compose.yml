@@ -1,5 +1,3 @@
-version: '3.8'
-
 # 'services' is the main section where we define each container of our application.
 services:
 

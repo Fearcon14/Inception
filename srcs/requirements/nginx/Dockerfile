@@ -2,7 +2,7 @@
 FROM debian:bullseye-slim
 
 # Install NGINX and OpenSSL
-RUN apt-get updtae && \
+RUN apt-get update && \
 	apt-get install -y nginx openssl && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/*
